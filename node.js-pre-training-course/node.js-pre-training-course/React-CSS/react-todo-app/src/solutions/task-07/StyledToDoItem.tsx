@@ -64,7 +64,7 @@ export const StyledToDoItem: React.FC<TodoItemProps> = ({ todo }) => {
   // 5. Handle different completion states gracefully
   // 
   // Example implementation:
-  // const itemClass = `todo-item ${todo.completed ? 'completed' : ''}`;
+   const itemClass = `todo-item ${todo.completed ? 'completed' : ''}`;
   // 
   // CSS classes to create:
   // .todo-item { /* base styles */ }
@@ -72,9 +72,7 @@ export const StyledToDoItem: React.FC<TodoItemProps> = ({ todo }) => {
 
   return (
     <div>
-      {/* TODO: Replace this with your implementation */}
-      <h4>Styled ToDo Item Component</h4>
-      <p>Implement conditional styling here</p>
+      
     </div>
   );
 }; 

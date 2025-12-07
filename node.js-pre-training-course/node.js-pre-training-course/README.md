@@ -98,7 +98,8 @@ node.js-pre-training-practice/
 4. **Move to React Application**
    ```bash
    cd React-CSS/react-todo-app
-   npm install
+   
+
    npm start
    # Navigate to http://localhost:3000
    # Complete React tasks in tasks/ folder

@@ -20,6 +20,6 @@ export class ToDoManager {
   }
 
   async list(): Promise<Todo[]> {
-    return this.service.search('');
+    return this.service.search("");
   }
 }
