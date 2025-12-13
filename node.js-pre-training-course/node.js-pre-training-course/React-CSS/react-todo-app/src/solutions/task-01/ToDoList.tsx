@@ -38,16 +38,15 @@ export const ToDoList: React.FC<TodoListProps> = ({ todos }) => {
   //   { id: 1, title: 'Learn React', completed: false },
   //   { id: 2, title: 'Build Todo App', completed: true }
   // ]} />
-  if(!todos || todos.length===0) {
-    return <h2>todos are empty or don't exist</h2>
+  if (todos.length === 0) {
+    return <h2>todos are empty or don't exist</h2>;
   }
 
   return (
     <ul>
-      {todos.map((todo, index) => (
-        <li key={todo.id || index}>
-          <span>{todo.title}</span>
-          <span> ({todo.completed ? "completed" : "not completed"})</span>
+      {todos.map((todo) => (
+        <li key={todo.id}>
+        {`${todo.title} - ${todo.completed ? "completed" : "not completed"}`}
         </li>
       ))}
     </ul>

@@ -69,10 +69,14 @@ export const StyledToDoItem: React.FC<TodoItemProps> = ({ todo }) => {
   // CSS classes to create:
   // .todo-item { /* base styles */ }
   // .todo-item.completed { /* completed styles */ }
-
-  return (
-    <div>
-      
+return (
+    <div className={todo.completed ? "completed" : "notCompleted"}>
+      <span>{todo.title}</span>
+      {todo.completed ? (
+        <span className="completed-status"> (completed) </span>
+      ) : (
+        <span className="active-status"> (active) </span>
+      )}
     </div>
   );
 }; 

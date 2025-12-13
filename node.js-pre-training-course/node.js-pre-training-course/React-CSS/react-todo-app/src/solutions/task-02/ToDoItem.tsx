@@ -47,12 +47,12 @@ export const ToDoItem: React.FC<TodoItemProps> = ({ todo }) => {
   // <ToDoItem todo={{ id: 1, title: 'Learn React', completed: true }} />
 
   return (
-    <div className={todo.completed ? "completed" : "notCompleted"}>
+    <div >
       <span>{todo.title}</span>
       {todo.completed ? (
-        <span className="completed"> (completed) </span>
+        <span > (completed) </span>
       ) : (
-        <span className="active"> (active) </span>
+        <span > (active) </span>
       )}
     </div>
   );
