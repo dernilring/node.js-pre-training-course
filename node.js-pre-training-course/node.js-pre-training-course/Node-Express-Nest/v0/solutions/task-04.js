@@ -1,7 +1,21 @@
 // Express.js app with GET /todos/:id endpoint
 const express = require('express');
-const app = express();
+const router = express.Router();
 
-// TODO: implement todos storage and GET /todos/:id logic
+router.get('/todos/:id', (req, res)=>{
+    const id= parseInt(req.params.id);
+    const todo= todos.find(todo=> todo.id===id);
+    
+    if(!todos){
+        res.status(404).json({
+            success: false,
+            message: 'todos are not found'
+        })
+    }
+    res.json({
+        success: true,
+        data: todo
+    })
+})
 
-module.exports = app; 
+module.exports = router; 
