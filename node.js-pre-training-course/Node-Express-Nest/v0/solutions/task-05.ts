@@ -10,8 +10,8 @@ export class TodosController {
   { id: 4, title: 'Go to gym', completed: false },
   { id: 5, title: 'Read a book', completed: true }
 ];
-  @Get()
+  @Get() 
   getTodos() {
-  return this.todos
+  return this.todos;
   }
 } 
