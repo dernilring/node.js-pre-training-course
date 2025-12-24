@@ -36,11 +36,6 @@ export class TodoController {
     return newTodo;
   }
 
-  @Get(":id")
-  getById(@Param("id") id: string): Todo | undefined{
-    const idN = Number(id);
-    return this.todos.find((t) => t.id === idN);
-  }
 
   @Get("search")
   search(@Query() query: { title?: string; completed?: string }): Todo[] {
@@ -61,4 +56,11 @@ export class TodoController {
     }
     return filtered;
   }
+  
+  @Get(":id")
+  getById(@Param("id") id: string): Todo | undefined{
+    const idN = Number(id);
+    return this.todos.find((t) => t.id === idN);
+  }
+
 }
