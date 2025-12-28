@@ -1,0 +1,78 @@
+
+TERMINAL COMMANDS USED FOR INSTALLATION
+
+  1. Update package list : sudo apt update
+
+  2. Install MySQL Server on Ubuntu 24.04 LTS : sudo apt install mysql-server -y
+
+  3. Run MySQL security configuration script : sudo mysql_secure_installation
+ 
+  During this setup:
+    - Set root password
+    - Removed anonymous users
+    - Disallowed root login remotely (Y)
+    - Removed test database (Y)
+    - Reloaded privilege tables (Y)
+
+  4. Check MySQL service status : sudo systemctl status mysql
+
+  5. Install DBeaver database management tool : sudo snap install dbeaver-ce --classic
+
+
+
+SQL QUERIES EXECUTED
+                        
+//Create new database for todo application
+CREATE DATABASE todo_app;
+
+//Select the database to use
+USE todo_app;
+
+//Create todos table with all required fields
+CREATE TABLE todos (
+    //Auto-incrementing unique identifier for each todo
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    
+    //Title of the todo item, cannot be empty (required field)
+    title VARCHAR(255) NOT NULL,
+    
+    //Longer description of the todo, optional field
+    description TEXT,
+    
+    //Current status of the todo (e.g., 'active', 'completed'), required field
+    status VARCHAR(50) NOT NULL,
+    
+    //Timestamp when the todo was created, automatically set to current time
+    created_at DATETIME DEFAULT NOW(),
+    
+    //Foreign key reference to the user who owns this todo
+    user_id INT NOT NULL
+);
+
+
+DESCRIPTION OF WORK AND ISSUES ENCOUNTERED                    
+
+  WHAT I DID:
+  1. Installed MySQL 8.0.44 on Ubuntu using APT package manager
+  2. Configured MySQL security settings using mysql_secure_installation
+  3. Installed DBeaver CE as a graphical database management tool
+  4. Created a new database named 'todo_app'
+  5. Created 'todos' table with proper data types and constraints
+
+ISSUES ENCOUNTERED AND SOLUTIONS:
+
+  Issue 1: Access denied for user 'root'@'localhost' in DBeaver
+  Problem: Root user in MySQL 8.0 uses auth_socket authentication by default,
+    which doesn't work with GUI tools like DBeaver
+  Solution: Created a separate admin user with password authentication:
+    CREATE USER 'admin'@'localhost' IDENTIFIED BY 'secure_password';
+    GRANT ALL PRIVILEGES ON *.* TO 'admin'@'localhost' WITH GRANT OPTION;
+    FLUSH PRIVILEGES;
+
+  Issue 2: Connection refused error in DBeaver
+  Problem: DBeaver was trying to connect via TCP/IP, but configuration was incorrect
+  Solution: Used 127.0.0.1 instead of 'localhost' as host address
+
+  Issue 3: Public Key Retrieval is not allowed
+  Problem: MySQL 8.0 security settings block public key retrieval by default
+  Solution: Enabled 'allowPublicKeyRetrieval=true' in DBeaver driver properties

@@ -1,0 +1,76 @@
+
+
+SQL QUERIES EXECUTED
+      
+
+FILTERING BY STATUS
+
+Select all todos with status 'active'
+SELECT * 
+FROM todos t 
+WHERE t.status = 'active';
+
+Select all todos with status 'completed'
+SELECT * 
+FROM todos t 
+WHERE t.status = 'completed';
+
+
+SORTING BY CREATION DATE
+
+Select all todos sorted by creation date in ascending order (oldest first)
+SELECT *
+FROM todos t 
+ORDER BY created_at ASC;
+
+Select all todos sorted by creation date in descending order (newest first)
+SELECT *
+FROM todos t 
+ORDER BY created_at DESC;
+
+
+SEARCH BY KEYWORD
+
+Select all todos where title contains the keyword 'milk'
+SELECT *
+FROM todos t 
+WHERE title LIKE '%milk%';
+
+
+DESCRIPTION OF WORK
+
+WHAT I DID:
+1. Created filtering queries using WHERE clause to select todos by their status
+   Used comparison operator (=) to match exact status values ('active' or 'completed')
+
+2. Implemented sorting queries using ORDER BY clause
+   Sorted todos by created_at field in both ascending (ASC) and descending (DESC) order
+   ASC shows oldest todos first, DESC shows newest todos first
+
+3. Implemented keyword search using LIKE operator with wildcards
+   Used pattern '%milk%' to find any todos where title contains 'milk' anywhere in the text
+   The % symbols match any characters before and after the keyword
+
+4. Tested all queries in DBeaver to verify correct results
+   Verified that filtering returned only matching records
+   Confirmed sorting order was correct for both ASC and DESC queries
+
+
+QUERY EXPLANATIONS
+      
+
+WHERE clause: Filters rows based on specified conditions 
+Example: WHERE t.status = 'active' returns only todos with active status
+
+ORDER BY clause: Sorts result set by specified column(s) 
+ASC (ascending): Sorts from lowest to highest, oldest to newest
+DESC (descending): Sorts from highest to lowest, newest to oldest
+
+LIKE operator: Performs pattern matching on text fields 
+% wildcard: Matches any sequence of characters (zero or more)
+Example: '%milk%' matches 'buy milk'
+
+
+ISSUES ENCOUNTERED
+      
+No significant issues were encountered during this task

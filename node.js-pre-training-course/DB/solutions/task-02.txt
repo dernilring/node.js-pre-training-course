@@ -1,0 +1,65 @@
+
+
+SQL QUERIES EXECUTED:
+                        
+
+INSERT: Add new todos to the database
+
+INSERT INTO todos (title, description, status, user_id)
+VALUES ('buy milk', 'buy milk for pancackes (3.2%)', 'completed', 1);
+
+INSERT INTO todos (title, description, status, user_id)
+VALUES ('prepare christmas presents', NULL, 'not completed', 2);
+
+
+
+SELECT: Read and display all todos from the table
+
+SELECT * FROM todos t;
+
+
+UPDATE: Modify existing todo (changed description and status)
+
+UPDATE todos t 
+SET description='zootopia 2', status='completed'
+WHERE id=2;
+
+
+DELETE: Remove a todo by its ID (delete a duplicate with id 4)
+
+DELETE FROM todos 
+WHERE id=4;
+
+
+DESCRIPTION OF WORK
+                        
+
+  WHAT I DID:
+  1. Performed basic CRUD (Create, Read, Update, Delete) operations:
+     - Created two new todo items using INSERT statements
+     - Retrieved all todos using SELECT query to verify data
+     - Updated todo with id=2 (changed description and status)
+     - Deleted todo with id=4 from the database
+  2. Verified all operations by running SELECT queries after each modification
+
+
+  ISSUES ENCOUNTERED AND SOLUTIONS
+                        
+
+  Issue 1: Syntax error 
+  Problem: wrong sql query WHERE SET description='zootopia 2' AND status='completed'
+  Solution: SET description='zootopia 2',  status='completed'
+
+  Issue 2: NULL vs empty string confusion
+  Problem: Initially used empty string '' for description field
+           Uncertainty about when to use NULL vs ''
+  Solution: Used NULL for truly absent/unknown values (no description)
+           Empty string '' can be used for intentionally blank values
+           For optional TEXT fields, NULL is more semantically correct
+
+  Issue 3: No visible confirmation after INSERT
+  Problem: After executing INSERT, no immediate feedback was shown
+  Solution: Ran SELECT * FROM todos to verify data was actually inserted
+           In DBeaver, can also refresh table view in Database Navigator
+
+ 

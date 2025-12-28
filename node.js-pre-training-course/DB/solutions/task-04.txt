@@ -1,0 +1,82 @@
+
+
+SQL QUERIES EXECUTED
+           
+
+STEP 1: Create users table with required columns
+
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    email VARCHAR(50) NOT NULL,
+    created_at DATETIME DEFAULT NOW(),
+    UNIQUE(email)
+);
+
+STEP 2: Add foreign key constraint linking todos to users
+
+ALTER TABLE todos 
+ADD FOREIGN KEY (user_id) REFERENCES users(id);
+
+
+STEP 3: Insert test users into users table
+
+INSERT INTO users (user_id, name, email) 
+VALUES (1,'alex', 'alex@example.com');
+
+INSERT INTO users (user_id, name, email) 
+VALUES (2,'maria', 'maria@exaple.com');
+
+INSERT INTO users (user_id, name, email) 
+VALUES (3,'anna', 'anna@exaple.com');
+
+
+STEP 4: Verify data and fix foreign key constraint issues
+
+Check existing todos data
+SELECT * FROM todos;
+
+Check user IDs in users table
+SELECT id FROM users;
+
+Find todos with non-existent user_id references
+SELECT user_id FROM todos WHERE user_id NOT IN (SELECT id FROM users);
+
+Update incorrect user_id values to match existing users
+UPDATE todos SET user_id = 3 WHERE user_id = 2;
+
+
+DESCRIPTION OF WORK
+           
+
+WHAT I DID:
+1. Created users table with auto-incrementing id, name, email, and created_at columns
+2. Applied UNIQUE constraint on email field to prevent duplicate email addresses
+3. Added foreign key constraint on todos.user_id referencing users.id
+   This ensures referential integrity between todos and users tables
+4. Inserted three test users (alex, maria, anna) into users table
+5. Verified data consistency between tables
+6. Fixed user_id mismatches in todos table to satisfy foreign key constraint
+
+ISSUES ENCOUNTERED AND SOLUTIONS
+
+Issue 1: Foreign key constraint failure
+Problem: Cannot add foreign key constraint
+         Error: "Cannot add or update a child row: a foreign key constraint fails"
+         Root cause: todos table contained user_id values (like 2) that did not 
+         exist in users.id column
+Solution: 
+Step 1: Identified mismatched values using query:
+        SELECT user_id FROM todos WHERE user_id NOT IN (SELECT id FROM users);
+Step 2: Checked actual user IDs in users table (found ids: 1, 3, 4, missing id: 2)
+Step 3: Updated incorrect user_id in todos:
+        UPDATE todos SET user_id = 3 WHERE user_id = 2;
+Step 4: Successfully added foreign key after data consistency was restored
+
+Issue 2: Auto-increment ID gaps
+Problem: User IDs were 1, 3, 4 instead of sequential 1, 2, 3
+Cause: Previous INSERT attempts may have failed, but auto-increment counter 
+       continued advancing
+Impact: Required careful mapping when updating todos.user_id values
+Solution: Verified actual user IDs before updating foreign key references
+          This is normal MySQL behavior and does not affect functionality
