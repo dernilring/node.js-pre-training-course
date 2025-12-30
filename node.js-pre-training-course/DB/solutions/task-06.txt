@@ -1,0 +1,42 @@
+
+CREATE INDEX: Add index on status column for performance optimization
+
+CREATE INDEX index_status
+ON todos (status);
+
+
+SHOW INDEX: Display all indexes on todos table
+
+SHOW INDEX
+FROM todos;
+
+
+EXPLAIN: Analyze query execution plan
+
+EXPLAIN SELECT *
+FROM todos t 
+WHERE t.status = 'completed';
+
+
+DESCRIPTION OF WORK
+                      
+WHAT I DID:
+1. Created an index named 'index_status' on the status column of todos table
+2. Verified index creation using SHOW INDEX command
+3. Analyzed query execution plan using EXPLAIN to see how MySQL uses the index
+4. Compared query performance with and without index
+
+
+PERFORMANCE IMPACT:
+
+Without Index:
+type: ALL (full table scan)
+key: NULL (no index used)
+rows: Scans all rows in table
+Performance: Slow on large tables
+
+With Index (index_status):
+type: ref (index reference scan)
+key: index_status (uses the index)
+rows: Only examines rows matching 'completed' status
+Performance: Significantly faster, especially with many rows

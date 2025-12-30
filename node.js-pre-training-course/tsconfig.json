@@ -1,18 +1,18 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "commonjs",
-    "lib": ["ES2020"],
-    "types": ["jest", "node"],
+    "target": "ES2023",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "lib": ["ES2023"],
+    "types": ["node"],
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node",
     "resolveJsonModule": true
   },
   "ts-node": {
     "compilerOptions": {
-      "module": "commonjs"
+      "module": "ESNext"
     }
   },
   "include": ["JS-TS/**/*"],

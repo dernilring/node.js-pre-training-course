@@ -1,0 +1,51 @@
+
+COUNT AGGREGATION: Count todos by status
+
+Count active todos
+SELECT COUNT(t.status)
+FROM todos t 
+WHERE t.status = 'active'
+GROUP BY t.status;
+
+Count completed todos
+SELECT COUNT(t.status)
+FROM todos t 
+WHERE t.status = 'completed'
+GROUP BY t.status;
+
+
+INNER JOIN: Count todos per user
+
+Select user names with their todo counts
+SELECT u.name, COUNT(u.id) as count_todos
+FROM users u 
+INNER JOIN todos t ON u.id = t.user_id
+GROUP BY u.id;
+
+
+EXCEPT OPERATION: Find users with no todos
+
+Select users who have no associated todos
+SELECT u.name
+FROM users u
+EXCEPT
+SELECT u.name 
+FROM users u 
+INNER JOIN todos t ON u.id = t.user_id
+GROUP BY u.id;
+
+Alternative query using LEFT JOIN:
+SELECT u.name
+FROM users u
+LEFT JOIN todos t ON u.id = t.user_id
+WHERE t.id IS NULL;
+
+DESCRIPTION OF WORK              
+
+WHAT I DID:
+1. Used COUNT() aggregate function to calculate number of todos by status
+2. Applied WHERE clause to filter todos by specific status (active or completed)
+3. Used GROUP BY to group results by status category
+4. Implemented INNER JOIN to combine users and todos tables
+5. Counted todos for each user using COUNT() with GROUP BY user id
+6. Used EXCEPT set operation to find users without any
