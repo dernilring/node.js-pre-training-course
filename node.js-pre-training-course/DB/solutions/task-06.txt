@@ -1,0 +1,88 @@
+
+SQL QUERIES EXECUTED
+
+
+CREATE INDEX: Add index on status column for performance optimization
+
+CREATE INDEX index_status
+ON todos (status);
+
+
+SHOW INDEX: Display all indexes on todos table
+
+SHOW INDEX
+FROM todos;
+
+
+EXPLAIN: Analyze query execution plan
+
+EXPLAIN SELECT *
+FROM todos t 
+WHERE t.status = 'completed';
+
+
+DESCRIPTION OF WORK
+
+
+WHAT I DID:
+1. Created an index named 'index_status' on the status column of todos table
+2. Verified index creation using SHOW INDEX command
+3. Analyzed query execution plan using EXPLAIN to see how MySQL uses the index
+4. Compared query performance with and without index
+
+
+QUERY EXPLANATIONS:
+
+CREATE INDEX Statement:
+Creates a database index on the status column [web:69][web:71]
+Index name: index_status
+Target: todos table, status column
+Purpose: Speed up queries filtering by status (WHERE status = 'value')
+Index type: B-tree (default for MySQL) which allows fast lookups
+
+SHOW INDEX Command:
+Displays all indexes defined on the todos table [web:71]
+Shows information about each index including:
+  Table: Name of the table (todos)
+  Non_unique: Whether index allows duplicate values (1 = yes)
+  Key_name: Name of the index (index_status, PRIMARY)
+  Seq_in_index: Column position in the index
+  Column_name: Which column is indexed (status)
+  Cardinality: Estimated number of unique values
+  Index_type: Type of index structure (BTREE)
+
+EXPLAIN Statement:
+Analyzes and displays the execution plan for a SELECT query [web:72][web:73]
+Shows how MySQL will execute the query, including:
+  id: Query identifier
+  select_type: Type of SELECT (SIMPLE, SUBQUERY, etc.)
+  table: Which table is being accessed (todos)
+  type: Join type or access method (ref, ALL, index, etc.)
+    - ALL means full table scan (slow, no index used)
+    - ref means index lookup (fast, index used)
+  possible_keys: Indexes that could potentially be used (index_status)
+  key: Index actually chosen by optimizer (index_status or NULL)
+  key_len: Length of the index key used
+  ref: Columns or constants compared to the index
+  rows: Estimated number of rows to examine
+  Extra: Additional information (Using where, Using index, etc.)
+
+
+PERFORMANCE IMPACT:
+
+Without Index:
+type: ALL (full table scan)
+key: NULL (no index used)
+rows: Scans all rows in table
+Performance: Slow on large tables
+
+With Index (index_status):
+type: ref (index reference scan)
+key: index_status (uses the index)
+rows: Only examines rows matching 'completed' status
+Performance: Significantly faster, especially with many rows
+
+
+ISSUES ENCOUNTERED
+
+No issues were encountered during this task
