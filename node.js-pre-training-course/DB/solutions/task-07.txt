@@ -1,0 +1,16 @@
+link to the pull request:
+https://github.com/dernilring/node.js-pre-training-course/pull/1
+
+DESCRIPTION OF WORK
+
+Installed Prisma ORM (version 6.9.0) and MySQL driver
+Configured schema.prisma with database connection and models (User and Todo)
+Created a seed script (prisma/seed.ts) to populate the database
+Generated Prisma Client for database operations
+
+    ​
+Issues Encountered: 
+
+Prisma version conflict (version 7.2.0 installed instead of 6.9.0)
+PrismaClient generation errors with custom output path
+Resolved by removing custom output configuration from generator and reinstalling correct Prisma version
