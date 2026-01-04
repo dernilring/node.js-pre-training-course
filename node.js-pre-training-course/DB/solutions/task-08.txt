@@ -1,0 +1,22 @@
+
+link to the pull request:
+
+https://github.com/dernilring/node.js-pre-training-course/pulls/1
+
+ Description:
+ Implemented full CRUD operations for the todos entity using Prisma ORM in NestJS:
+ 
+ CREATE: POST endpoint creates new todos with title, description, and completed status
+ READ: GET endpoints retrieve all todos or filter by completion status, also GET by ID
+ UPDATE: PUT endpoint updates todo fields (title, description, status) by ID
+ DELETE: DELETE endpoint removes todos by ID
+
+ Issues encountered:
+ 1. Field mapping: Database uses 'status' field but API expects 'completed' boolean
+    Solution: Created mapToApiFormat() method to convert between DB and API formats
+ 2. Update method initially threw 404 for all requests due to incorrect error handling
+    Solution: Removed generic try-catch and let Prisma errors propagate correctly
+ 3. Description field not appearing in API responses
+    Solution: Added description field to mapToApiFormat() return object
+
+ All operations tested successfully using Thunder Client extension in VS Code.

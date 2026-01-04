@@ -19,7 +19,7 @@ In this task, you will use **raw SQL** to create a trigger that automatically lo
 
 2. **Create a Trigger for Updates:**
 
-   - Write a SQL trigger that, whenever a row in the `todos` table is updated, automatically inserts a record into the `audit_log` table with the todo's ID, the action ('UPDATE'), and the current timestamp.
+      - Write a SQL trigger that, whenever a row in the `todos` table is updated, automatically inserts a record into the `audit_log` table with the todo's ID, the action ('UPDATE'), and the current timestamp.
 
 3. **Create a Trigger for Deletes:**
    - Write a SQL trigger that, whenever a row in the `todos` table is deleted, automatically inserts a record into the `audit_log` table with the todo's ID, the action ('DELETE'), and the current timestamp.

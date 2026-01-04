@@ -1,0 +1,43 @@
+https://github.com/dernilring/node.js-pre-training-course/pulls/1
+
+1. Create an `audit_log` Table:
+CREATE TABLE audit_log (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    todo_id INT NOT NULL,
+    action VARCHAR(50) NOT NULL,
+    created_at DATETIME DEFAULT NOW()
+);     
+
+2.Create a Trigger for Updates:
+CREATE TRIGGER audit_log_update 
+AFTER UPDATE ON todos
+    FOR EACH ROW 
+    BEGIN
+    	INSERT INTO audit_log (todo_id, action, created_at)
+    	VALUES (NEW.id, 'UPDATE', NOW());
+    END;
+
+3.Create a Trigger for Deletes:
+CREATE TRIGGER audit_log_delete
+AFTER DELETE ON todos
+    FOR EACH ROW 
+    BEGIN
+    	INSERT INTO audit_log (todo_id, action, created_at)
+    	VALUES (OLD.id, 'DELETE', NOW());
+    END;
+    
+
+Tested the triggers:
+   
+UPDATE todos t 
+SET status='completed'
+WHERE t.id =10;
+
+INSERT INTO todos (title, description , status, user_id)
+VALUES ('meet a friend', NULL, 'active', 5);
+
+DELETE FROM todos WHERE id = 12;
+
+SELECT * FROM todos;	
+
+SELECT * FROM audit_log;
