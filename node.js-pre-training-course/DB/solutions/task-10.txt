@@ -1,0 +1,58 @@
+https://github.com/dernilring/node.js-pre-training-course/pulls/1
+
+1. SET UP REDIS
+   - Installed Redis server on Linux: sudo apt install redis-server
+   - Started Redis service: sudo systemctl start redis-server
+   - Verified connection: redis-cli ping (returned PONG)
+   - Installed npm packages: @nestjs/cache-manager, cache-manager, cache-manager-redis-yet, redis
+
+2. CONFIGURE REDIS IN NESTJS
+   - Modified app.module.ts to register CacheModule with redisStore
+   - Configured Redis connection: localhost:6379
+   - Set TTL: 300000 milliseconds (5 minutes)
+   - Made CacheModule global for access across all modules
+
+3. IMPLEMENT CACHING FOR USER'S TODO LIST
+   - Created service method: getByUserId() in todo.service.ts using Prisma findMany
+   - Added endpoint: GET /todos/user/:user_id/todos in todo.controller.ts
+   - Implemented cache key format: todos:user:{userId}
+   - Cache hit: returns data from Redis with source: "cache"
+   - Cache miss: fetches from database, stores in Redis, returns with source: "database"
+   - Injected CACHE_MANAGER using @Inject() decorator
+
+4. MANUAL CACHE INVALIDATION
+   - Added cache invalidation in POST /todos (create operation)
+   - Added cache invalidation in PUT /todos/:id (update operation)
+   - Added cache invalidation in DELETE /todos/:id (delete operation)
+   - Used cacheManager.del() to remove cached data after modifications
+   - Retrieved user_id from request body or by fetching existing todo
+
+5. TTL DEMONSTRATION
+   - Created endpoint: GET /todos/test-ttl
+   - Set 10-second TTL for quick demonstration
+   - Used setTimeout() to check cache at 5s (found) and 11s (expired)
+   - Console logs confirm automatic expiration behavior
+
+TESTING PERFORMED:
+   - GET /todos/user/1/todos (first call - Cache MISS, source: database)
+   - GET /todos/user/1/todos (second call - Cache HIT, source: cache)
+   - POST /todos with user_id (creates todo and invalidates cache)
+   - GET /todos/user/1/todos (Cache MISS after invalidation)
+   - GET /todos/test-ttl (TTL expiration demonstration)
+
+FILES MODIFIED:
+   - app.module.ts: Added CacheModule configuration with Redis store
+   - todo.controller.ts: Added caching endpoint, cache invalidation logic, TTL demo endpoint
+   - todo.service.ts: Added getByUserId() method for fetching user's todos
+   - package.json: Added Redis-related dependencies
+
+ISSUES ENCOUNTERED:
+
+Issue 1: Route conflict with :id parameter
+   - Problem: @Get(':id') was intercepting /todos/test-ttl request
+   - Cause: Generic route with parameter placed before specific routes
+   - Solution: Reordered controller methods - specific routes (test-ttl, user/:user_id/todos) 
+     before generic @Get(':id')
+
+
+

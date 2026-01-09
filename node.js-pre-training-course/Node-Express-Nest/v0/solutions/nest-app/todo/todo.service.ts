@@ -1,5 +1,4 @@
 import { Injectable } from "@nestjs/common";
-import { Todo } from "../../../../../JS-TS/solutions/types";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -14,6 +13,7 @@ export class TodoService {
       title: dbTodo.title,
       description: dbTodo.description,
       completed: dbTodo.status === "completed",
+      user_id: dbTodo.user_id,
     };
   }
 
@@ -41,12 +41,20 @@ export class TodoService {
   async getById(id: number) {
     const todo = await prisma.todos.findUnique({
       where: {
-        id,
+        id: id,
       },
     });
     return todo ? this.mapToApiFormat(todo) : null;
   }
 
+  async getByUserId(user_id: number) {
+    const usersTodos = await prisma.todos.findMany({
+      where: {
+        user_id: user_id,
+      },
+    });
+    return usersTodos.map((todo) => this.mapToApiFormat(todo));
+  }
   async update(
     id: number,
     data: { title?: string; description?: string; completed?: boolean }
@@ -63,7 +71,6 @@ export class TodoService {
     });
     return this.mapToApiFormat(updatedTodo);
   }
- 
 
   async delete(id: number): Promise<boolean> {
     try {
