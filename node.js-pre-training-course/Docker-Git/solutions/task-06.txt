@@ -1,0 +1,99 @@
+COMMANDS USED FOR INTERACTIVE REBASE 
+
+ Create feature branch
+git checkout main
+git checkout -b feature/user-authentication
+
+ Create 5 commits
+echo "module.exports = { authenticate: () => {} };" > auth.js
+git add auth.js
+git commit -m "feat: add authentication module"
+
+echo '{"name": "auth-app", "dependencies": {"bcrypt": "^5.0.0"}}' > auth-package.json
+git add auth-package.json
+git commit -m "feat: add bcrypt dependency for authentication"
+
+echo "module.exports = { authenticate: () => {}, validate: () => {} };" > auth.js
+git add auth.js
+git commit -m "fix: typo in auth module"
+
+echo "module.exports = (req, res, next) => { next(); };" > auth-middleware.js
+git add auth-middleware.js
+git commit -m "feat: add authentication middleware"
+
+echo "describe('auth', () => { it('works', () => {}); });" > auth.test.js
+git add auth.test.js
+git commit -m "feat: add authentication tests"
+
+Interactive rebase to squash
+git rebase -i HEAD~5
+ changed 'pick' to 'squash' for commit "fix: typo in auth module"
+
+ Simulate work на main
+git checkout main
+echo " Project Updated" > UPDATE.md
+git add UPDATE.md
+git commit -m "docs: update project documentation"
+
+ Rebase feature branch onto updated main
+git checkout feature/user-authentication
+git rebase main
+
+ Create merge for comparing
+git checkout -b feature/user-authentication-merge main
+git merge feature/user-authentication
+
+BEFORE INTERACTIVE REBASE - COMMIT HISTORY 
+
+1b96eec feat: add authentication tests
+239d99e feat: add authentication middleware
+0f3fa38 fix: typo in auth module                    fix -> squashed
+5a25fd8 feat: add bcrypt dependency for authentication
+99a887b feat: add authentication module
+b0002e6 docs: update project documentation
+
+Total: 5 commits (plus main commits)
+
+AFTER INTERACTIVE REBASE - COMMIT HISTORY 
+
+98d1c76 feat: add authentication tests
+f939900 feat: add authentication middleware
+37a9c4d feat: add bcrypt dependency for authentication and fix auth module  ← changed commit
+99a887b feat: add authentication module
+b0002e6 docs: update project documentation
+
+Total: 4 commits (typo fix squashed into previous commit)
+
+REBASE VS MERGE: WHEN TO USE
+
+USE REBASE WHEN:
+- Working on local feature branch not yet pushed to remote
+- Want clean, linear commit history without merge commits
+- Need to clean up commits before creating pull request (squash typos, reorder)
+- Working alone or on small team with clear communication
+- Want to keep feature branch up to date with main without merge commits
+- Need to incorporate latest changes from main into feature branch
+
+USE MERGE WHEN:
+- Working on public/shared branch that others depend on
+- Multiple developers working on the same feature branch
+- Need to preserve complete history and context of when branches diverged
+- Want to see explicit integration points in history
+- Compliance/audit requirements need full historical record
+- Working on long-lived feature branches
+- Want safer approach (doesn't rewrite history)
+
+KEY DIFFERENCES:
+REBASE:
+- Rewrites commit history
+- Creates linear, cleaner timeline
+- Moves entire branch to new base
+- Can cause issues if branch is already pushed/shared
+- Better for local cleanup before sharing work
+
+MERGE:
+- Preserves complete history
+- Creates merge commits showing integration points
+- Shows true branching structure
+- Safe for public/shared branches
+- Better for collaborative work and preserving context

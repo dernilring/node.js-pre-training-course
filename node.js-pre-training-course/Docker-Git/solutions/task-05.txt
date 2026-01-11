@@ -1,0 +1,71 @@
+ SINGLE-STAGE DOCKERFILE 
+FROM node:24
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+
+RUN npm run build
+
+EXPOSE 3000
+
+CMD ["npm", "start"]
+
+
+ MULTI-STAGE DOCKERFILE 
+# Stage 1: Builder
+FROM node:24 AS builder
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY tsconfig.json ./
+COPY src ./src
+
+RUN npm run build
+
+# Stage 2: Production
+FROM node:24-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install --only=production
+
+COPY --from=builder /app/dist ./dist
+
+EXPOSE 3000
+
+CMD ["npm", "start"]
+
+
+ .DOCKERIGNORE CONTENT 
+node_modules
+npm-debug.log
+dist
+.git
+.gitignore
+README.md
+.env
+
+
+Commands used to build and test both images
+
+$ docker build -f Dockerfile.single -t express-app:single .
+$ docker build -t express-app:multi .
+
+
+ IMAGE SIZE COMPARISON 
+ $ docker images | grep express-app
+express-app:multi    e69be7368173        237MB           58MB        
+express-app:single   37b306bae50c       1.68GB          420MB   
+
+

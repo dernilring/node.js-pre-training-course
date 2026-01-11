@@ -1,0 +1,84 @@
+ 1. Create a new branch called 'feature/add-scripts' AND
+ 2. Switch to the new branch
+
+ git checkout -b feature/add-scripts
+
+ 3. Edit package.json to add scripts section
+
+ "scripts": {
+  "start": "node index.js",
+  "test": "echo \"Running tests\"",
+  "dev": "nodemon index.js"
+ }
+
+ 4. Check status to see modified files
+git status
+
+ 5. Stage the modified package.json
+git add package.json
+
+ 6. Commit the changes on feature branch
+git commit -m "feat: add npm scripts for start, test, and dev"
+
+ 7. Switch back to main branch
+git checkout main
+
+ 8. Observe differences (package.json should not have scripts section here)
+cat package.json
+
+
+ 9. Create another branch called 'feature/add-dependencies' from main
+git checkout -b feature/add-dependencies
+ OR separately: git branch feature/add-dependencies && git checkout feature/add-dependencies
+
+ 10. Switch back to main branch to merge
+git checkout main
+
+ 11. Merge the feature/add-scripts branch into main
+git merge feature/add-scripts
+
+ 12. Delete the merged branch
+git branch -d feature/add-scripts
+
+ 13. Check branch list
+git branch -a
+
+ 14. Check commit history with graph
+git log --graph --oneline
+
+ 15. Push changes to remote repository
+git push origin main
+
+
+
+
+Output of `git branch -a` at different stages
+
+ Stage 1: After creating feature/add-scripts branch 
+text
+$ git branch -a
+ feature/add-scripts
+* main
+ remotes/origin/main
+
+
+ Stage 2: After creating feature/add-dependencies branch 
+text
+$ git branch -a
+ feature/add-dependencies
+ feature/add-scripts
+* main
+ remotes/origin/main
+
+
+ Stage 3: After merging and deleting feature/add-scripts 
+text
+$ git branch -a
+ feature/add-depend
+
+
+
+ $ git log --graph --oneline
+* e7f82c6 (HEAD -> main) feat: add npm scripts for start, test, and dev
+* 7ff02be (origin/main, feature/add-dependencies) feat : add package.json amd readme files
+* 1aa97ed feat : add .gitignore file

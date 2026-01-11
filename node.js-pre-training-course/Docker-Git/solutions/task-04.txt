@@ -1,0 +1,33 @@
+ All Git Commands Used 
+
+git checkout main
+git checkout -b feature/update-readme-v1
+# (edited README.md title to "My Awesome Project v1")
+git add README.md
+git commit -m 'feat: update readme file '
+git checkout main
+git checkout -b feature/update-readme-v2
+# (edited README.md title to "My Super Project v2")
+git add README.md
+git commit -m 'feat : update readne file v2'
+git checkout main
+git merge feature/update-readme-v1
+git merge feature/update-readme-v2
+# (conflict occurred, edited README.md to resolve)
+git add README.md
+git commit -m 'fix : resolve conflict between readme files'
+
+ Content of Conflict Markers 
+<<<<<<< HEAD
+My Awesome Project v1
+=
+My Super Project v2
+>>>>>>> feature/update-readme-v2
+
+ How I Resolved the Conflict 
+I manually edited README.md and combined both version titles
+into one unified title: "My Super-Awesome Project "
+
+
+ Final Commit Message for the Merge 
+git commit -m 'fix : resolve conflict between readme files'
