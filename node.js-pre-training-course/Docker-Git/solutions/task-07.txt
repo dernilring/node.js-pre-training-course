@@ -1,0 +1,65 @@
+`docker-compose.yml` file:
+
+
+version: '3.8'
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: mydb
+      DB_USER: postgres
+      DB_PASS: password123
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: mydb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ddarusya32@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: adminpass
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
+
+
+All Docker Compose commands used:
+
+docker compose logs pgadmin
+docker compose logs db
+docker compose logs app
+docker compose ps
+docker compose up -d
+docker compose down -v
+
+
+URLs and credentials for accessing services
+ API: http://localhost:3000/health, /data
+ pgAdmin: http://localhost:8080 (ddarusya32@gmail.com/adminpass)
+ PostgreSQL: localhost:5432 (postgres/password123)
+
+Output of `docker-compose ps` when services are running
+
+$ docker compose ps
+WARN[0000] /home/dernilring/test-repo/my-first-repo/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion 
+NAME                      IMAGE            COMMAND                  SERVICE   CREATED          STATUS          PORTS
+my-first-repo-db-1        postgres:16      "docker-entrypoint.s…"   db        22 minutes ago   Up 22 minutes   0.0.0.0:5432->5432/tcp, [::]:5432->5432/tcp
+my-first-repo-pgadmin-1   dpage/pgadmin4   "/entrypoint.sh"         pgadmin   22 minutes ago   Up 22 minutes   443/tcp, 0.0.0.0:8080->80/tcp, [::]:8080->80/tcp

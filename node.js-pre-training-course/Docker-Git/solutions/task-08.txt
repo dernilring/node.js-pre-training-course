@@ -1,0 +1,183 @@
+
+$ git remote v
+
+origin    https://github.com/ddarusya32/myforkrepo.git (fetch)
+origin    https://github.com/ddarusya32/myforkrepo.git (push)
+upstream  https://github.com/dolgaya13/company_repo.git (fetch)
+upstream  https://github.com/dolgaya13/company_repo.git (push)
+
+Explanation:
+ origin   = My fork repository (where I push my changes)
+ upstream = Company/original repository (where I pull updates from)
+
+
+ Feature Branch Workflow Commands
+ 
+
+ 1. Setup Phase
+ Sync with upstream before starting work
+git checkout main
+git pull upstream main
+git push origin main
+
+ 2. Create Feature Branch
+ Always branch from updated main
+git checkout b feature/taskprioritysystem
+
+ 3. Development Phase
+ Make incremental commits with good messages
+git add src/taskManager.js
+git commit m "feat: Add basic TaskManager class
+
+ Create TaskManager with task list storage
+ Implement addTask method with autoincrementing IDs"
+
+git add src/taskManager.js
+git commit m "feat: Add priority support to tasks
+
+ Add VALID_PRIORITIES constant
+ Update addTask to accept priority parameter"
+
+ 4. Push to Fork
+ Push feature branch to YOUR fork, not upstream!
+git push origin feature/taskprioritysystem
+
+ 5. Create Pull Request
+ Done via GitHub web interface:
+ FROM: ddarusya32/myforkrepo @ feature/taskprioritysystem
+ TO:   dolgaya13/company_repo @ main
+
+
+ Strategy for Handling Upstream Changes
+ 
+
+ Scenario 1: Syncing Fork's Main Branch
+ When upstream has new commits
+
+ Step 1: Fetch upstream changes
+git fetch upstream
+
+ Step 2: Update local main
+git checkout main
+git merge upstream/main
+
+ Step 3: Update fork on GitHub
+git push origin main
+
+ Scenario 2: Update Feature Branch with Latest Main
+ When main has moved forward while working on feature
+
+ Step 1: Make sure main is up to date
+git checkout main
+git pull upstream main
+
+ Step 2: Rebase feature branch
+git checkout feature/taskprioritysystem
+git rebase main
+
+ Step 3: Force push (because history changed)
+git push origin feature/taskprioritysystem forcewithlease
+
+ Scenario 3: Handling Code Review Feedback
+ Make additional commits on the same branch
+
+git checkout feature/taskprioritysystem
+
+ Make changes based on feedback
+git add src/taskManager.js
+git commit m "fix: Add validation based on review feedback"
+
+ Push updates (PR automatically updates)
+git push origin feature/taskprioritysystem
+
+ Why forcewithlease instead of force?
+ forcewithlease is SAFE:
+  Only pushes if remote hasn't changed since you last fetched
+  Prevents overwriting someone else's work
+  Fails if someone else pushed in the meantime
+
+ force is DANGEROUS:
+  Overwrites remote branch unconditionally
+  Can destroy other people's commits
+  NEVER use it in collaborative projects!
+
+
+ Best Practices for Commit Messages
+ 
+
+ Structure I Learned:
+<type>: <short summary> (50 chars or less)
+
+<detailed description  what and why, not how>
+<wrap at 72 characters>
+
+ List specific changes
+ Use bullet points for clarity
+ Reference issues if applicable
+
+ Commit Types:
+ feat:     New feature
+ fix:      Bug fix
+ docs:     Documentation changes
+ refactor: Code refactoring (no functionality change)
+ test:     Adding or updating tests
+ chore:    Maintenance tasks (dependencies, config)
+ style:    Formatting, missing semicolons (no code change)
+
+ Good Commit Message Examples:
+
+GOOD:
+feat: Add priority support to tasks
+
+ Add VALID_PRIORITIES constant (low, medium, high)
+ Update addTask to accept priority parameter with 'medium' as default
+ Add priority validation with Error on invalid input
+ Extend listTasks to support filtering by priority level
+
+GOOD:
+fix: Validate priority values in addTask
+
+ Throw error if priority not in VALID_PRIORITIES
+ Prevents invalid priority data from entering system
+
+Addresses review feedback from PR 123
+
+ BAD:
+"fixed stuff"
+"updates"
+"wip"
+"changes"
+"asdfasdf"
+
+ Key Principles:
+1. **Atomic commits**  Each commit should be a single logical change
+2. **Present tense**  "Add feature" not "Added feature"
+3. **Imperative mood**  "Fix bug" not "Fixes bug" or "Fixed bug"
+4. **Why, not how**  Code shows HOW, commit message explains WHY
+5. **50/72 rule**  50 chars for subject, 72 for body lines
+6. **Separate subject from body**  Blank line between them
+
+
+ Workflow Summary
+ 
+
+Fork Workflow Pattern:
+1. Fork company repo on GitHub → creates your fork
+2. Clone your fork locally
+3. Add company repo as 'upstream' remote
+4. Create feature branch from main
+5. Make commits with good messages
+6. Push feature branch to origin (your fork)
+7. Create PR from your fork to upstream
+8. Address review feedback with new commits
+9. Sync with upstream regularly
+10. After merge, delete feature branch
+
+Key Reminders:
+ ALWAYS push features to origin (your fork), not upstream
+ ALWAYS sync with upstream before starting new work
+ ALWAYS use forcewithlease, NEVER force
+ NEVER commit directly to main
+ Feature branches should be focused and shortlived
+
+
