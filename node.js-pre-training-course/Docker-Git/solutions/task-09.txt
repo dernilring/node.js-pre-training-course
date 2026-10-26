@@ -1,0 +1,558 @@
+
+
+## 1. Image Management Commands
+
+### Pull Docker Images
+```bash
+# Скачать образ nginx с тегом alpine (облегченная версия)
+docker pull nginx:alpine
+
+# Скачать образ redis версии 7 на alpine
+docker pull redis:7-alpine
+
+# Скачать образ Node.js версии 24 на alpine
+docker pull node:24-alpine
+```
+**Объяснение:** `docker pull` загружает образы из Docker Hub. Alpine - минималистичный Linux дистрибутив, образы на его основе весят меньше.
+
+---
+
+### List All Images
+```bash
+# Показать все локальные образы
+docker images
+
+# Альтернативная команда (то же самое)
+docker image ls
+
+# Показать образы с дополнительной информацией (размер, ID)
+docker images -a
+
+# Показать только ID образов
+docker images -q
+```
+**Объяснение:** Показывает REPOSITORY, TAG, IMAGE ID, CREATED, SIZE всех загруженных образов.
+
+---
+
+### Inspect Image Details
+```bash
+# Детальная информация об образе nginx:alpine
+docker inspect nginx:alpine
+
+# Показать только определенные поля (формат JSON)
+docker inspect --format='{{.Architecture}}' nginx:alpine
+
+# Показать историю слоев образа
+docker history nginx:alpine
+
+# Показать размер образа
+docker image inspect nginx:alpine --format='{{.Size}}'
+```
+**Объяснение:** `docker inspect` возвращает полную конфигурацию образа в JSON формате.
+
+---
+
+### Tag Images
+```bash
+# Создать свой тег для nginx образа
+docker tag nginx:alpine my-nginx:v1.0
+
+# Создать тег с указанием registry (для push в свой registry)
+docker tag nginx:alpine myregistry.com/my-nginx:v1.0
+
+# Проверить, что тег создан
+docker images | grep my-nginx
+```
+**Объяснение:** `docker tag` создает alias для образа. Один образ может иметь несколько тегов.
+
+---
+
+### Save and Load Images
+```bash
+# Сохранить образ nginx в tar архив
+docker save nginx:alpine -o nginx-alpine.tar
+
+# Или с использованием перенаправления
+docker save nginx:alpine > nginx-alpine-backup.tar
+
+# Проверить, что файл создан
+ls -lh nginx-alpine.tar
+
+# Удалить образ nginx (для теста)
+docker rmi nginx:alpine
+
+# Загрузить образ обратно из tar файла
+docker load -i nginx-alpine.tar
+
+# Или с использованием перенаправления
+docker load < nginx-alpine-backup.tar
+
+# Проверить, что образ восстановлен
+docker images | grep nginx
+```
+**Объяснение:** `docker save` экспортирует образ в файл, `docker load` импортирует. Полезно для переноса образов без интернета.
+
+---
+
+### Remove Images
+```bash
+# Удалить образ по имени:тегу
+docker rmi nginx:alpine
+
+# Удалить образ по ID
+docker rmi <image-id>
+
+# Принудительное удаление (даже если используется)
+docker rmi -f nginx:alpine
+
+# Удалить несколько образов
+docker rmi nginx:alpine redis:7-alpine
+
+# Удалить все неиспользуемые образы (dangling)
+docker image prune
+
+# Удалить ВСЕ неиспользуемые образы (не только dangling)
+docker image prune -a
+
+# Удалить образы без подтверждения
+docker image prune -a -f
+```
+**Объяснение:** `docker rmi` удаляет образы. Dangling images - это образы без тега (<none>).
+
+---
+
+## 2. Container Lifecycle Management
+
+### Run Nginx Container
+```bash
+# Запустить nginx в detached режиме с проброской портов
+docker run -d -p 8080:80 --name my-nginx nginx:alpine
+
+# Пояснение параметров:
+# -d (detached) - запуск в фоновом режиме
+# -p 8080:80 - пробросить порт 80 контейнера на порт 8080 хоста
+# --name my-nginx - дать контейнеру имя
+
+# Проверить, что контейнер запущен
+docker ps
+
+# Проверить доступность (должен вернуть HTML nginx)
+curl http://localhost:8080
+```
+
+---
+
+### Run Redis Container
+```bash
+# Запустить redis с именем и политикой перезапуска
+docker run -d \
+  --name my-redis \
+  --restart unless-stopped \
+  -p 6379:6379 \
+  redis:7-alpine
+
+# Пояснение restart политик:
+# no - не перезапускать (по умолчанию)
+# on-failure - только при ошибке
+# always - всегда перезапускать
+# unless-stopped - всегда, кроме ручной остановки
+
+# Проверить статус
+docker ps | grep my-redis
+
+# Проверить логи redis
+docker logs my-redis
+```
+
+---
+
+### Create and Start Node.js Container
+```bash
+# Создать контейнер БЕЗ запуска
+docker create --name my-node -it node:24-alpine
+
+# Проверить созданные контейнеры (включая остановленные)
+docker ps -a
+
+# Запустить созданный контейнер
+docker start my-node
+
+# Проверить, что контейнер запущен
+docker ps | grep my-node
+
+# Остановить контейнер
+docker stop my-node
+
+# Снова запустить
+docker start my-node
+```
+**Объяснение:** `docker create` создает контейнер без запуска, `docker start` запускает существующий контейнер.
+
+---
+
+### Execute Commands in Running Containers
+```bash
+# Открыть bash в nginx контейнере
+docker exec -it my-nginx /bin/sh
+# В alpine используется sh вместо bash
+# Внутри можно выполнять команды: ls, ps, cat /etc/nginx/nginx.conf
+# Выход: exit
+
+# Выполнить одиночную команду в контейнере
+docker exec my-nginx ls /etc/nginx
+
+# Проверить версию nginx
+docker exec my-nginx nginx -v
+
+# Подключиться к redis-cli
+docker exec -it my-redis redis-cli
+# Внутри: ping, set key value, get key
+# Выход: exit
+
+# Выполнить команду от другого пользователя
+docker exec -u root my-nginx whoami
+
+# Выполнить команду в определенной директории
+docker exec -w /var/log/nginx my-nginx ls -la
+```
+**Объяснение:** `docker exec` выполняет команды в работающем контейнере. `-it` создает интерактивную сессию.
+
+---
+
+### Copy Files Between Host and Containers
+```bash
+# Создать тестовый файл на хосте
+echo "<h1>Custom Page</h1>" > index.html
+
+# Скопировать файл С хоста В контейнер
+docker cp index.html my-nginx:/usr/share/nginx/html/
+
+# Проверить, что файл скопирован
+docker exec my-nginx cat /usr/share/nginx/html/index.html
+
+# Скопировать файл ИЗ контейнера НА хост
+docker cp my-nginx:/etc/nginx/nginx.conf ./nginx-config-backup.conf
+
+# Скопировать всю директорию
+docker cp my-nginx:/etc/nginx/ ./nginx-backup/
+
+# Проверить скопированные файлы
+ls -la nginx-backup/
+
+# Скопировать с сохранением путей
+docker cp my-nginx:/var/log/nginx/. ./nginx-logs/
+```
+**Объяснение:** `docker cp` копирует файлы между хостом и контейнером в обе стороны.
+
+---
+
+## 3. Monitoring and Troubleshooting
+
+### Monitor Container Resource Usage
+```bash
+# Показать использование ресурсов всех контейнеров в реальном времени
+docker stats
+
+# Показать статистику конкретного контейнера
+docker stats my-nginx
+
+# Показать статистику БЕЗ stream (один снимок)
+docker stats --no-stream
+
+# Показать все контейнеры (включая остановленные)
+docker stats -a
+
+# Показать только определенные колонки
+docker stats --format "table {{.Container}}\t{{.CPUPerc}}\t{{.MemUsage}}"
+```
+**Объяснение:** `docker stats` показывает CPU, память, сеть, I/O в реальном времени.
+
+---
+
+### View Container Logs
+```bash
+# Показать все логи контейнера
+docker logs my-nginx
+
+# Следить за логами в реальном времени (как tail -f)
+docker logs -f my-nginx
+
+# Показать логи с временными метками
+docker logs -t my-nginx
+
+# Показать последние 100 строк логов
+docker logs --tail 100 my-nginx
+
+# Показать логи с определенного времени
+docker logs --since 2024-01-01 my-nginx
+
+# Показать логи за последние 30 минут
+docker logs --since 30m my-nginx
+
+# Показать логи до определенного времени
+docker logs --until 2024-01-25T12:00:00 my-nginx
+
+# Комбинация: последние 50 строк с временными метками в реальном времени
+docker logs -f --tail 50 -t my-nginx
+```
+**Объяснение:** `docker logs` показывает stdout/stderr контейнера.
+
+---
+
+### Inspect Container Configuration
+```bash
+# Полная информация о контейнере в JSON
+docker inspect my-nginx
+
+# Показать IP адрес контейнера
+docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' my-nginx
+
+# Показать все переменные окружения
+docker inspect --format='{{.Config.Env}}' my-nginx
+
+# Показать точки монтирования (volumes)
+docker inspect --format='{{.Mounts}}' my-nginx
+
+# Показать статус контейнера
+docker inspect --format='{{.State.Status}}' my-nginx
+
+# Показать порты
+docker inspect --format='{{.NetworkSettings.Ports}}' my-nginx
+
+# Проверить конфигурацию сети
+docker inspect --format='{{json .NetworkSettings.Networks}}' my-nginx | jq
+```
+**Объяснение:** `docker inspect` возвращает детальную конфигурацию контейнера.
+
+---
+
+### Create and Manage Docker Volumes
+```bash
+# Создать volume
+docker volume create my-data
+
+# Создать volume с драйвером и параметрами
+docker volume create --driver local --opt type=none --opt device=/data --opt o=bind my-volume
+
+# Показать все volumes
+docker volume ls
+
+# Показать детальную информацию о volume
+docker volume inspect my-data
+
+# Использовать volume при запуске контейнера
+docker run -d --name nginx-with-volume -v my-data:/data nginx:alpine
+
+# Показать, какие контейнеры используют volume
+docker ps -a --filter volume=my-data
+
+# Удалить volume (только если не используется)
+docker volume rm my-data
+
+# Удалить все неиспользуемые volumes
+docker volume prune
+
+# Создать контейнер с anonymous volume
+docker run -d --name test -v /data nginx:alpine
+```
+**Объяснение:** Docker volumes - постоянное хранилище данных, независимое от жизненного цикла контейнера.
+
+---
+
+### Network Troubleshooting
+```bash
+# Показать все сети
+docker network ls
+
+# Создать custom bridge сеть
+docker network create my-network
+
+# Детальная информация о сети
+docker network inspect my-network
+
+# Подключить контейнер к сети
+docker network connect my-network my-nginx
+
+# Отключить контейнер от сети
+docker network disconnect my-network my-nginx
+
+# Запустить контейнер в определенной сети
+docker run -d --name app --network my-network nginx:alpine
+
+# Проверить connectivity между контейнерами
+docker exec my-nginx ping -c 3 my-redis
+
+# Показать IP адреса всех контейнеров в сети
+docker network inspect my-network --format='{{range .Containers}}{{.Name}}: {{.IPv4Address}}{{println}}{{end}}'
+
+# Удалить сеть
+docker network rm my-network
+
+# Очистить неиспользуемые сети
+docker network prune
+```
+**Объяснение:** Docker networks позволяют контейнерам общаться друг с другом.
+
+---
+
+## 4. Cleanup and Maintenance
+
+### Stop All Running Containers
+```bash
+# Остановить все работающие контейнеры
+docker stop $(docker ps -q)
+
+# Остановить контейнеры с таймаутом (по умолчанию 10 сек)
+docker stop -t 30 $(docker ps -q)
+
+# Принудительно остановить (kill)
+docker kill $(docker ps -q)
+
+# Остановить контейнеры по фильтру
+docker stop $(docker ps -q --filter "name=my-")
+```
+
+---
+
+### Remove Containers
+```bash
+# Удалить остановленный контейнер
+docker rm my-nginx
+
+# Принудительно удалить (даже работающий)
+docker rm -f my-nginx
+
+# Удалить несколько контейнеров
+docker rm my-nginx my-redis my-node
+
+# Удалить все остановленные контейнеры
+docker container prune
+
+# Удалить ВСЕ контейнеры (работающие и остановленные)
+docker rm -f $(docker ps -aq)
+
+# Удалить контейнеры старше 24 часов
+docker container prune --filter "until=24h"
+```
+
+---
+
+### System Cleanup Commands
+```bash
+# ПЕРЕД очисткой: проверить использование диска
+docker system df
+
+$ docker system df
+TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE
+Images          10        7         3.885GB   2.08GB (53%)
+Containers      7         0         262.1kB   262.1kB (100%)
+Local Volumes   4         4         48.21MB   0B (0%)
+Build Cache     41        0         2.203GB   47.86MB
+
+# Удалить все неиспользуемые данные (контейнеры, сети, образы, build cache)
+docker system prune
+
+# Агрессивная очистка (включая используемые образы)
+docker system prune -a
+
+# Очистка с удалением volumes (ОСТОРОЖНО!)
+docker system prune -a --volumes
+
+# Очистка без подтверждения
+docker system prune -a -f
+
+# Очистка образов старше 7 дней
+docker image prune -a --filter "until=168h"
+
+# ПОСЛЕ очистки: снова проверить использование диска
+docker system df
+
+$ docker system df
+TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE
+Images          0         0         0B        0B
+Containers      0         0         0B        0B
+Local Volumes   0         0         0B        0B
+Build Cache     0         0         0B        0B
+# Показать детальную информацию
+docker system df -v
+```
+
+---
+
+## Most Useful Docker Commands Summary
+
+### Ежедневные команды:
+```bash
+docker ps                    # Показать работающие контейнеры
+docker ps -a                 # Показать все контейнеры
+docker images                # Показать образы
+docker logs -f <container>   # Следить за логами
+docker exec -it <container> sh  # Войти в контейнер
+docker stats                 # Мониторинг ресурсов
+```
+
+### Управление:
+```bash
+docker start <container>     # Запустить
+docker stop <container>      # Остановить
+docker restart <container>   # Перезапустить
+docker rm <container>        # Удалить контейнер
+docker rmi <image>           # Удалить образ
+```
+
+### Очистка:
+```bash
+docker system prune          # Очистить неиспользуемое
+docker system df             # Проверить использование диска
+docker volume prune          # Очистить volumes
+docker network prune         # Очистить сети
+```
+
+### Troubleshooting:
+```bash
+docker inspect <container>   # Детальная информация
+docker logs --tail 100 <container>  # Последние логи
+docker stats --no-stream     # Снимок использования ресурсов
+docker top <container>       # Процессы в контейнере
+```
+
+---
+
+## Example Output for task-09.txt
+
+### Before Cleanup:
+```
+$ docker system df
+TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE
+Images          3         3         250MB     0B (0%)
+Containers      3         3         15MB      0B (0%)
+Local Volumes   1         1         100MB     0B (0%)
+Build Cache     0         0         0B        0B
+```
+
+### Container Inspection Example:
+```
+$ docker inspect my-nginx | grep IPAddress
+"IPAddress": "172.17.0.2"
+
+$ docker logs --tail 5 -t my-nginx
+2024-01-25T10:30:15.123Z "GET / HTTP/1.1" 200
+2024-01-25T10:30:16.456Z "GET /index.html HTTP/1.1" 200
+```
+
+### After Cleanup:
+```
+$ docker system prune -a
+Deleted Containers: 0
+Deleted Images: 0
+Deleted Networks: 0
+Total reclaimed space: 0B
+
+$ docker system df
+TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE
+Images          3         3         250MB     0B (0%)
+Containers      3         3         15MB      0B (0%)
+Local Volumes   1         1         100MB     0B (0%)
+Build Cache     0         0         0B        0B
+```

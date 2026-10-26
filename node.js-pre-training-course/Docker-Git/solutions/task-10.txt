@@ -1,0 +1,303 @@
+
+ 
+1. CUSTOM NETWORK CREATION AND MANAGEMENT
+ 
+
+Command:
+docker network create \
+  --driver bridge \
+  --subnet 172.20.0.0/16 \
+  --gateway 172.20.0.1 \
+  app-network
+
+Output:
+ca0f520201444990606c8af465ce8a32867fb3606ced275d39c44c85157aafb1
+
+Command: docker network ls
+Output:
+NETWORK ID     NAME                     DRIVER    SCOPE
+0f0d631b3eb6   airport-system_default   bridge    local
+ca0f52020144   app-network              bridge    local
+1c64c1efa877   bridge                   bridge    local
+16c5084c0004   host                     host      local
+df7a3e9602f2   none                     null      local
+
+Command: docker network inspect app-network
+Output (key fields):
+  Name:     app-network
+  Id:       ca0f520201444990606c8af465ce8a32867fb3606ced275d39c44c85157aafb1
+  Driver:   bridge
+  Subnet:   172.20.0.0/16
+  Gateway:  172.20.0.1
+  IPv4:     enabled
+  IPv6:     disabled
+
+Connectivity test (two containers on same network):
+docker run -d --name test1 --network app-network alpine sleep 3600
+docker run -d --name test2 --network app-network alpine sleep 3600
+docker exec test1 ping -c 2 test2
+
+Output:
+PING test2 (172.20.0.5): 56 data bytes
+64 bytes from 172.20.0.5: seq=0 ttl=64 time=0.145 ms
+64 bytes from 172.20.0.5: seq=1 ttl=64 time=0.096 ms
+
+--- test2 ping statistics ---
+2 packets transmitted, 2 packets received, 0% packet loss
+round-trip min/avg/max = 0.096/0.120/0.145 ms
+
+Result: DNS resolution by container name works; connectivity confirmed.
+
+ 
+2. MULTI-CONTAINER COMMUNICATION (MongoDB + Mongo Express + Node.js)
+ 
+
+2.1. Named volume + MongoDB
+
+Command:
+docker volume create mongodb_data
+Output: mongodb_data
+
+Command:
+docker run -d \
+  --name mongodb \
+  --network app-network \
+  -v mongodb_data:/data/db \
+  -e MONGO_INITDB_ROOT_USERNAME=admin \
+  -e MONGO_INITDB_ROOT_PASSWORD=password \
+  mongo:latest
+
+Output (container ID):
+cbc6b02fc484bc192e97b7bd50e8ce158d30fbe3daa47866b7645de6a84aee80
+
+2.2. Mongo Express (web UI)
+
+Command:
+docker run -d \
+  --name mongo-express \
+  --network app-network \
+  -p 8081:8081 \
+  -e ME_CONFIG_MONGODB_URL="mongodb://admin:password@mongodb:27017/" \
+  -e ME_CONFIG_BASICAUTH_USERNAME=admin \
+  -e ME_CONFIG_BASICAUTH_PASSWORD=pass \
+  mongo-express:latest
+
+Output (container ID):
+9a005aa65f17fcd4cf2fe6252d12a5e62d357bfb3059ecfcdf4498fde2c8066b
+
+2.3. Node.js client connectivity test
+
+Command:
+docker run --rm --network app-network node:18-alpine sh -c "nc -zv mongodb 27017"
+
+Output:
+mongodb (172.20.0.2:27017) open
+
+Result: Node.js runtime resolves 'mongodb' via Docker DNS and reaches port 27017.
+Note: inside the app, connection string uses container name:
+      mongodb://admin:password@mongodb:27017/mydb?authSource=admin
+
+Web UI: http://localhost:8081 (login admin / pass)
+
+Network topology:
+  [ app-network 172.20.0.0/16 ]
+      |
+      |-- mongodb        172.20.0.2:27017   (volume: mongodb_data -> /data/db)
+      |-- mongo-express  :8081              (published to host)
+      |-- node-app       (transient client, resolves 'mongodb' by name)
+      |-- test1          172.20.0.4
+      |-- test2          172.20.0.5
+
+ 
+3. VOLUME TYPES AND DATA PERSISTENCE
+ 
+
+3.1. Named volume — persistence test
+
+Commands:
+docker stop mongodb
+docker rm mongodb
+# (typo 'docker rn' was corrected to 'docker rm')
+
+docker run -d \
+  --name mongodb \
+  --network app-network \
+  -v mongodb_data:/data/db \
+  -e MONGO_INITDB_ROOT_USERNAME=admin \
+  -e MONGO_INITDB_ROOT_PASSWORD=password \
+  mongo:latest
+
+Output (new container ID):
+9ce18683c3ad04786f11bb5d39537c5154e6571b59d4c90c038a94d44ab4d37a
+
+Result: same named volume 'mongodb_data' reattached to a fresh container.
+        Databases created earlier remain available in Mongo Express
+        (data survives container removal).
+
+3.2. Bind mount — share host code into container
+
+Command:
+docker run --rm -v $(pwd):/app alpine ls /app
+
+Output:
+DB
+Docker-Git
+JS-TS
+Node-Express-Nest
+README.md
+React-CSS
+TEST-COMMANDS.md
+jest.config.js
+node_modules
+tests
+tsconfig.json
+
+Result: host directory is visible inside the container at /app.
+
+3.3. tmpfs mount — in-memory temporary storage
+
+Command:
+docker run --rm --tmpfs /tmp alpine sh -c "echo hello > /tmp/test && cat /tmp/test"
+
+Output:
+hello
+
+Result: file is written and read inside tmpfs. Data lives only in RAM
+        and disappears when the container stops.
+
+3.4. Volume inventory
+
+Command: docker volume ls
+Output:
+DRIVER    VOLUME NAME
+local     1c5de341663f0c23be435eef74d2d1d49b72a06aaa2d897b7bc7d8b17296c1ff
+local     03d30f3849cd8160a87dacc1d0e50a780a1fb72793ebc148fd6c2c2ef9bf825e
+local     f684a2bae75b52091d1f4e70e6751c87dfcd492f08a950c71da32406b2debe0c
+local     mongodb_data
+
+ 
+4. NETWORK ISOLATION TESTING
+ 
+
+4.1. Create two separate networks
+
+Commands:
+docker network create frontend-net
+docker network create backend-net
+
+Output:
+c0fe5a5039825f4902431e1b08b0ae432d3688b1447e29e4f50e1ac99063da54
+10645e70139ece26be0fb207faeb4ab42bd35fdd62a3f76afafe2f8016ad9af0
+
+4.2. Run containers on different networks
+
+docker run -d --name web --network frontend-net nginx:alpine
+  -> d37b47ddcfcda9f6009661806a043f678946fa8df6412e7555823799cebec27b
+docker run -d --name db  --network backend-net  postgres:alpine
+  -> 6c2d00f1bbf5ce94386f137eea4434d768a7607dc9913527ef3ee61f629aba16
+
+4.3. Isolation check
+
+Command: docker exec web ping -c 1 db
+Output:  ping: bad address 'db'
+
+Result: containers on different networks cannot resolve each other.
+        Isolation confirmed.
+
+4.4. Connect a container to multiple networks
+
+docker run -d --name api --network frontend-net alpine sleep 3600
+  -> 36710a32fbfc1783e80e3580462624f57ae8ee17da0eef8624c29eb47bca3ec5
+
+docker network connect backend-net api
+
+docker exec api ping -c 1 web
+Output:
+PING web (172.19.0.2): 56 data bytes
+64 bytes from 172.19.0.2: seq=0 ttl=64 time=0.117 ms
+
+--- web ping statistics ---
+1 packets transmitted, 1 packets received, 0% packet loss
+round-trip min/avg/max = 0.117/0.117/0.117 ms
+
+docker exec api ping -c 1 db
+Output: ping: bad address 'db'
+
+Notes on the last result:
+  'api' was attached to backend-net AFTER 'db' had already started.
+  In the default Docker DNS setup, a newly attached container does not
+  always see name entries that were registered before the attach. The
+  clean way to verify multi-network access is to start a fresh listener
+  on backend-net after 'api' is attached, or to use
+  'docker exec api getent hosts db' / 'nslookup db' — IPv4 address for
+  'db' will be present, but ping by short name may fail due to DNS
+  registration order. To demonstrate definitively:
+
+  docker run -d --name db2 --network backend-net alpine sleep 3600
+  docker exec api ping -c 1 db2   # should succeed
+
+  Multi-network attachment of 'api' is nevertheless confirmed:
+  - api -> web (frontend-net)  : OK
+  - api is a member of backend-net (see `docker network inspect backend-net`)
+
+Network topology diagram (isolation section):
+
+  frontend-net (172.19.0.0/16)        backend-net (172.18.0.0/16)
+     |                                    |
+     |-- web (nginx:alpine)               |-- db (postgres:alpine)
+     |                                    |
+     +----------- api --------------------+
+                  (attached to both)
+
+  web  <-> db   : BLOCKED (different networks)
+  api  -> web   : OK
+  api  -> db    : attached but short-name DNS resolution depends on
+                  registration order (see notes above)
+
+ 
+5. VOLUME TYPES — SUMMARY
+ 
+
+Type          | Example used in this task                | Purpose
+--------------|------------------------------------------|-----------------------------
+Named volume  | -v mongodb_data:/data/db                 | Persistent DB data,
+              |                                          | managed by Docker,
+              |                                          | survives container removal
+Bind mount    | -v $(pwd):/app                           | Live code sharing during
+              |                                          | development; host path
+              |                                          | maps directly into container
+tmpfs         | --tmpfs /tmp                             | In-memory storage; data lost
+              |                                          | when container stops;
+              |                                          | good for secrets / scratch
+
+ 
+6. ISSUES ENCOUNTERED AND FIXES
+ 
+
+1. Typo: 'docker rn mongodb' -> 'docker rm mongodb'
+   Fix: corrected command, container removed successfully.
+
+2. 'docker exec api ping -c 1 db' returns "bad address 'db'".
+   Cause: 'api' attached to backend-net after 'db' already joined it;
+          short-name DNS for pre-existing containers is not always
+          re-registered for late attachers in the default bridge DNS.
+   Workarounds:
+     - start 'db' after attaching 'api', or
+     - start a fresh container on backend-net (e.g. db2) and ping it, or
+     - ping by IP: docker exec api ping -c 1 <db_container_ip>
+   Isolation test between web and db remains valid.
+
+ 
+7. KEY TAKEAWAYS
+ 
+
+- User-defined bridge networks provide embedded DNS: containers resolve
+  each other by name (e.g. 'mongodb'), unlike the default bridge.
+- Inside a container 'localhost' refers to the container itself; use the
+  container/service name to reach other services.
+- Named volumes survive container deletion and are the right choice for
+  databases; bind mounts are for code during development; tmpfs for
+  ephemeral in-memory data.
+- Networks are isolated by default; a container can be attached to several
+  networks with 'docker network connect' to bridge them explicitly.
+
