@@ -1,3 +1,5 @@
+git commit -m "feat: add feature"
+
 `docker-compose.yml` file:
 
 

@@ -22,7 +22,7 @@ git push origin main
 
  2. Create Feature Branch
  Always branch from updated main
-git checkout b feature/taskprioritysystem
+git checkout -b feature/taskprioritysystem
 
  3. Development Phase
  Make incremental commits with good messages

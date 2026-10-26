@@ -1,3 +1,7 @@
+git init
+git add .
+git commit -m "initial commit"
+
 COMMANDS USED FOR INTERACTIVE REBASE 
 
  Create feature branch
